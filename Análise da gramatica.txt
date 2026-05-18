@@ -28,7 +28,7 @@ OBS.: Possui símbolos iguais.
 first1() = {var}
 
 <declaração-de-variável> ::=
-    var <lista-de-ids> : <tipo>
+    var <id> : <tipo>
 first1() = {var}
 
 <declarações> ::=
@@ -59,13 +59,6 @@ OBS.: Possui símbolos iguais.
     | <literal>
     | "(" <expressão> ")"
 first1() = {<id>} U {<literal>} U {"("}
-
-<float-lit> ::= 
-    <int-lit> . <int-lit>
-    | <int-lit> .
-    | . <int-lit>
-first1() = {0,1,2,...,9} U {0,1,2,...,9} U {.}
-OBS.: Possui símbolos iguais.
 
 <id> ::=
     <letra>
@@ -102,8 +95,7 @@ OBS.: Possui símbolos iguais.
 <literal> ::=
     <bool-lit>
     | <int-lit>
-    | <float-lit>
-first1() = {true, false} U {0,1,2,...,9} U {0,1,2,...,9,.}
+first1() = {true, false} U {0,1,2,...,9}
 OBS.: Possui símbolos iguais.
 
 <op-ad> ::=
@@ -121,11 +113,8 @@ first1() = {*, /, and}
 <op-rel> ::=
     <
     | >
-    | <=
-    | >=
     | =
-    | <>
-first1() = {<, >, <=, >=, =, <>}
+first1() = {<, >, =}
 
 <outros> ::=
     !
@@ -146,13 +135,12 @@ OBS.: Possui recursão à esquerda. Gramáticas com recursão à esquerda não s
 
 <tipo> ::=
     | <tipo-simples>
-first1() = {integer, real, boolean}
+first1() = {integer, boolean}
 
 <tipo-simples> ::=
     integer
-    | real
     | boolean
-first1() = {integer, real, boolean}
+first1() = {integer, boolean}
 
 <variável> ::=
     <id>

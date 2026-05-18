@@ -1,16 +1,21 @@
 package compiler.analise_de_contexto;
 
+
 import compiler.ShowError;
 import compiler.visitor.*;
 
+
 public class Checker implements Visitor {
 
+
     public IdentificationTable identificationTable = new IdentificationTable();
+
 
     public void check(nodePrograma programa) {
         System.out.println("");
         programa.visit(this);
     }
+
 
     @Override
     public void visit_nodeComando(nodeComando comando) {
@@ -18,25 +23,27 @@ public class Checker implements Visitor {
             comando.visit(this);
     }
 
+
     @Override
     public void visit_nodeComandoAtribuicao(nodeComandoAtribuicao comando) {
         if (comando != null) {
+
 
             Attribute atributo = identificationTable.retrieve(comando.variavel.ID.valor);
             if (atributo != null) {
                 comando.declaracaoDeVariavel = atributo.declaracaoDeVariavel;
             } else {
-                // Erro variável não declarada
                 new ShowError(
                     "A variável "+ "\"" + 
-                comando.variavel.ID.valor + "\"" + " não foi declarada\n" 
-                + "Linha: " +  comando.variavel.token.line + "\""
-                + " Coluna: " + comando.variavel.token.column
+                    comando.variavel.ID.valor + "\"" + " não foi declarada\n" 
+                    + "Linha: " +  comando.variavel.token.line + "\""
+                    + " Coluna: " + comando.variavel.token.column
                 );
-                
             }
 
+
             Type tipoExpressao = getType_nodeExpressao(comando.expressao);
+
 
             if (comando.variavel != null) {
                 if (!tipoExpressao.equals(atributo.tipo)) {
@@ -51,6 +58,7 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeComandoComposto(nodeComandoComposto comando) {
         if (comando != null) {
@@ -62,10 +70,10 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeComandoCondicional(nodeComandoCondicional comando) {
         if (comando != null) {
-            // Verificar se a expressão é booleana
             if (
                 comando.expressao != null && 
                 this.getType_nodeExpressao(comando.expressao).kind == Type.BOOL
@@ -83,12 +91,12 @@ public class Checker implements Visitor {
         }
     }
 
-   
+
     public void visit_nodeComandoIterativo(nodeComandoIterativo comando) {
         if (comando != null) {
-            // Verificar se a expressão é booleana
             if (comando.expressao != null) {
                 Type tipo = this.getType_nodeExpressao(comando.expressao);
+
 
                 if(tipo.kind == Type.BOOL) {
                     if (comando.comando != null) {
@@ -104,6 +112,7 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeCorpo(nodeCorpo corpo) {
         if (corpo != null) {
@@ -112,6 +121,7 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeDeclaracao(nodeDeclaracao declaracao) {
         if (declaracao != null) {
@@ -119,30 +129,25 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
-        // Não precisa verificar se o Tipo é válido,
-        // o analisador léxico já cuida disso
-        // Talvez visitar o nodeTipo
-        for (int i = 0; i < declaracao.IDs.size(); i++) {
-            if (identificationTable.retrieve(declaracao.IDs.get(i).valor) == null) {
-
-                identificationTable.enter(
-                        declaracao.IDs.get(i).valor,
-                        declaracao.tipo.tipoSimples.tipoType,
-                        declaracao);
-                declaracao.IDs.get(i).visit(this);
-            } else {
-                // Erro variavel já declarada
-                new ShowError(
-                    "Variável \"" + declaracao.IDs.get(i).token.spelling + "\" já declarada\n" + 
-                    "Linha: " + declaracao.IDs.get(i).token.line + " Coluna: " 
-                    + declaracao.IDs.get(i).token.column
-                
-                );
-            }
+        if (identificationTable.retrieve(declaracao.ID.valor) == null) {
+            identificationTable.enter(
+                declaracao.ID.valor,
+                declaracao.tipo.tipoSimples.tipoType,
+                declaracao
+            );
+            declaracao.ID.visit(this);
+        } else {
+            new ShowError(
+                "Variável \"" + declaracao.ID.token.spelling + "\" já declarada\n" + 
+                "Linha: " + declaracao.ID.token.line + " Coluna: " 
+                + declaracao.ID.token.column
+            );
         }
     }
+
 
     @Override
     public void visit_nodeDeclaracoes(nodeDeclaracoes declaracoes) {
@@ -153,9 +158,9 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeExpressao(nodeExpressao expressao) {
-
         if (expressao != null) {
             if (expressao.expressaoSimples1 != null) {
                 expressao.expressaoSimples1.visit(this);
@@ -168,6 +173,7 @@ public class Checker implements Visitor {
             }
         }
     }
+
 
     @Override
     public void visit_nodeExpressaoSimples(nodeExpressaoSimples expressao) {
@@ -186,6 +192,7 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeFator(nodeFator fator) {
         if (fator instanceof nodeVariavel) {
@@ -197,12 +204,14 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeID(nodeID ID) {
         if (ID != null && identificationTable.retrieve(ID.valor) != null) {
             return;
         }
     }
+
 
     @Override
     public void visit_nodeLiteral(nodeLiteral literal) {
@@ -211,12 +220,14 @@ public class Checker implements Visitor {
         return;
     }
 
+
     @Override
     public void visit_nodeOperador(nodeOperador operador) {
         if (operador != null) {
             return;
         }
     }
+
 
     @Override
     public void visit_nodeOperadorAditivo(nodeOperadorAditivo operador) {
@@ -225,12 +236,14 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeOperadorMultiplicativo(nodeOperadorMultiplicativo operador) {
         if (operador != null) {
             return;
         }
     }
+
 
     @Override
     public void visit_nodeOperadorRelacional(nodeOperadorRelacional operador) {
@@ -239,12 +252,14 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodePrograma(nodePrograma programa) {
         if (programa != null) {
             programa.corpo.visit(this);
         }
     }
+
 
     @Override
     public void visit_nodeTermo(nodeTermo termo) {
@@ -253,12 +268,14 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeTipo(nodeTipo tipo) {
         if (tipo != null) {
             tipo.visit(this);
         }
     }
+
 
     @Override
     public void visit_nodeTipoSimples(nodeTipoSimples tipoSimples) {
@@ -267,25 +284,29 @@ public class Checker implements Visitor {
         }
     }
 
+
     @Override
     public void visit_nodeVariavel(nodeVariavel variavel) {
         if (variavel != null) {
             variavel.ID.visit(this);
         }
-        // Erro variável não declarada
     }
+
 
     public Type getType_nodeExpressao(nodeExpressao expressao) {
         Type typeExpresaoSimples1, typeExpresaoSimples2;
         Type type = null;
+
 
         if (expressao != null) {
             if (expressao.expressaoSimples1 != null) {
                 typeExpresaoSimples1 = getType_nodeExpressaoSimples(expressao.expressaoSimples1);
                 type = typeExpresaoSimples1;
 
+
                 if (expressao.expressaoSimples2 != null) {
                     typeExpresaoSimples2 = getType_nodeExpressaoSimples(expressao.expressaoSimples2);
+
 
                     type = Type.evaluate(
                         typeExpresaoSimples1, typeExpresaoSimples2, 
@@ -298,9 +319,11 @@ public class Checker implements Visitor {
         return type;
     }
 
+
     public Type getType_nodeExpressaoSimples(nodeExpressaoSimples expressaoSimples) {
         Type type = null;
         if (expressaoSimples != null) {
+
 
             if (expressaoSimples.termo != null && expressaoSimples.operadoresAditivos.isEmpty()) {
                 type = getType_nodeTermo(expressaoSimples.termo);
@@ -308,11 +331,14 @@ public class Checker implements Visitor {
                 Type tipoResultado = null;
                 Type tipoTermoAnterior = getType_nodeTermo(expressaoSimples.termo);
 
+
                 for (int i = 0; i < expressaoSimples.termos.size(); i++) {
                     nodeTermo termo = expressaoSimples.termos.get(i);
                     Type tipoTermo = getType_nodeTermo(termo);
 
+
                     nodeOperador operador = expressaoSimples.operadoresAditivos.get(i);
+
 
                     tipoTermoAnterior = Type.evaluate(tipoTermoAnterior, tipoTermo, operador);
                 }
@@ -324,6 +350,7 @@ public class Checker implements Visitor {
         return type;
     }
 
+
     public Type getType_nodeFator(nodeFator fator) {
         Type type = null;
         if (fator instanceof nodeVariavel) {
@@ -334,8 +361,10 @@ public class Checker implements Visitor {
             type = getType_nodeExpressao((nodeExpressao) fator);
         }
 
+
         return type;
     }
+
 
     public Type getType_nodeLiteral(nodeLiteral literal) {
         Type type = null;
@@ -345,9 +374,11 @@ public class Checker implements Visitor {
         return type;
     }
 
+
     public Type getType_nodeTermo(nodeTermo termo) {
         Type type = null;
         if (termo != null) {
+
 
             if (termo.fator != null && termo.fatores.isEmpty()) {
                 type = getType_nodeFator(termo.fator);
@@ -355,11 +386,14 @@ public class Checker implements Visitor {
                 Type tipoResultado = null;
                 Type tipoFatorAnterior = getType_nodeFator(termo.fator);
 
+
                 for (int i = 0; i < termo.fatores.size(); i++) {
                     nodeFator fator = termo.fatores.get(i);
 
+
                     Type tipoFator = getType_nodeFator(fator);
                     nodeOperador operador = termo.operadoresMultiplicativos.get(i);
+
 
                     tipoFatorAnterior = Type.evaluate(tipoFatorAnterior, tipoFator, operador);
                 }
@@ -370,8 +404,10 @@ public class Checker implements Visitor {
         return type;
     }
 
+
     public Type getType_nodeVariavel(nodeVariavel variavel) {
         Type type = null;
+
 
         if (variavel != null && variavel.ID != null) {
             Attribute atributo = identificationTable.retrieve(variavel.ID.valor);
@@ -379,10 +415,9 @@ public class Checker implements Visitor {
                 type = atributo.tipo;
             } else {
                 new ShowError(
-                    "Variável \"" + variavel.token.spelling + "\" + não declarada\n" + 
+                    "Variável \"" + variavel.token.spelling + "\" não declarada\n" + 
                     "Linha: " + variavel.token.line + " Coluna: " 
                     + variavel.token.column
-                
                 );
             }
         }

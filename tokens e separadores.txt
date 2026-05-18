@@ -3,25 +3,24 @@
   
   begin | if | then |
   else | var | while | do | program | end
-  := | ( | ) | : | ; | , | . |
+  := | ( | ) | : | ; | . |
   <outros> | <op-ad> | <op-mul> | <op-rel> |
   <tipo-simples>
 
 <id> ::= <letra> | <id><letra> | <id><digito> 
   <letra> ::= a | b | c | d | e | ... | z
 
-<literal> ::= <bool-lit> | <int-lit> | <float-lit>
+<literal> ::= <bool-lit> | <int-lit>
   <bool-lit> ::= true | false
   <int-lit> ::= <digito> | <int-lit><digito>
-  <float-lit> ::= <int-lit>.<int-lit> | <int-lit>. | .<int-lit>
     <digito> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 <op-ad> ::= + | - | or
 <op-mul> ::= * | / | and
-<op-rel> ::= < | > | <= | >= | = | <>
+<op-rel> ::= < | > | =
 <outros> ::= ! | @ | # | ...
 
-<tipo-simples> ::= integer | real | boolean
+<tipo-simples> ::= integer | boolean
 
 OBS:
 - Talvez "(" | ")" façam parte dos tokens
