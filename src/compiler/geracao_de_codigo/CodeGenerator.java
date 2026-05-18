@@ -128,28 +128,34 @@ public class CodeGenerator implements Visitor {
   }
 
 
-  public String convertOperadorToString(String operador) {
+public String convertOperadorToString(String operador) {
     if (operador.equals("+")) {
-      return "ADD";
+        return "ADD";
     } else if (operador.equals("-")) {
-      return "SUB";
+        return "SUB";
     } else if (operador.equals("or")) {
-      return "OR";
+        return "OR";
     } else if (operador.equals("*")) {
-      return "MULT";
+        return "MULT";
     } else if (operador.equals("/")) {
-      return "DIV";
+        return "DIV";
     } else if (operador.equals("and")) {
-      return "AND";
+        return "AND";
     } else if (operador.equals(">")) {
-      return "GT";
+        return "GT";
     } else if (operador.equals("<")) {
-      return "LT";
+        return "LT";
     } else if (operador.equals("=")) {
-      return "EQ";
+        return "EQ";
+    } else if (operador.equals(">=")) {
+        return "GE";
+    } else if (operador.equals("<=")) {
+        return "LE";
+    } else if (operador.equals("<>")) {
+        return "NE";
     }
     return "(UNKNOWN)";
-  }
+}
 
 
   public void printCode(nodePrograma programa) {
