@@ -1,0 +1,21 @@
+  PUSH 2
+  PUSH 2
+  PUSH 2
+  PUSH 1
+
+  LOADL 12.5
+  STORE 0[SB]
+
+  LOADL .5
+  STORE 2[SB]
+
+  LOAD 0[SB]
+  LOAD 2[SB]
+  CALL (UNKNOWN)
+  STORE 6[SB]
+
+  POP 0
+  POP 0
+  POP 2
+  POP 1
+  HALT

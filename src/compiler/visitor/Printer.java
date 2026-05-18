@@ -105,20 +105,33 @@ public class Printer implements Visitor {
 
   public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
     if (declaracao != null) {
-      this.indent();
-      System.out.println("Declaracao de Variavel:");
-      indentacao += tabulacao;
-      if (declaracao.ID != null) {
-        declaracao.ID.visit(this);
-      }
-      if (declaracao.tipo != null) {
         this.indent();
-        System.out.println("Tipo:");
-        declaracao.tipo.visit(this);
-      }
-      indentacao -= tabulacao;
+        System.out.println("Declaracao de Variavel:");
+        indentacao += tabulacao;
+
+        if (declaracao.IDs != null) {
+            this.indent();
+            System.out.println("IDs:");
+            indentacao += tabulacao;
+
+            for (int i = 0; i < declaracao.IDs.size(); i++) {
+                if (declaracao.IDs.get(i) != null) {
+                    declaracao.IDs.get(i).visit(this);
+                }
+            }
+
+            indentacao -= tabulacao;
+        }
+
+        if (declaracao.tipo != null) {
+            this.indent();
+            System.out.println("Tipo:");
+            declaracao.tipo.visit(this);
+        }
+
+        indentacao -= tabulacao;
     }
-  }
+}
 
 
   public void visit_nodeDeclaracoes(nodeDeclaracoes declaracoes) {

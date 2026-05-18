@@ -1,17 +1,13 @@
 package compiler.geracao_de_codigo;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
-
 import compiler.analise_de_contexto.Type;
 import compiler.visitor.*;
-
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class CodeGenerator implements Visitor {
@@ -270,23 +266,29 @@ public class CodeGenerator implements Visitor {
 
 
   @Override
-  public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
+public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
     byte tipoVariavel = declaracao.tipo.tipoSimples.tipoType.kind;
-    String variavelNome = declaracao.ID.valor;
     int tamanhoVariavel = 0;
 
     if (tipoVariavel == Type.BOOL) {
-      tamanhoVariavel = 1;
+        tamanhoVariavel = 1;
     } else if (tipoVariavel == Type.INT) {
-      tamanhoVariavel = 2;
+        tamanhoVariavel = 2;
+    } else if (tipoVariavel == Type.REAL) {
+        tamanhoVariavel = 2;
     }
 
-    generateCodeLine("PUSH " + tamanhoVariavel);
-    variavelTipoMap.put(variavelNome, "" + tipoVariavel);
-    variavelEnderecoMap.put(variavelNome, "" + this.currentAddressCounter);
-    this.currentAddressCounter += tamanhoVariavel;
-  }
+    if (declaracao.IDs != null) {
+        for (int i = 0; i < declaracao.IDs.size(); i++) {
+            String variavelNome = declaracao.IDs.get(i).valor;
 
+            generateCodeLine("PUSH " + tamanhoVariavel);
+            variavelTipoMap.put(variavelNome, "" + tipoVariavel);
+            variavelEnderecoMap.put(variavelNome, "" + this.currentAddressCounter);
+            this.currentAddressCounter += tamanhoVariavel;
+        }
+    }
+}
 
   @Override
   public void visit_nodeDeclaracoes(nodeDeclaracoes declaracoes) {

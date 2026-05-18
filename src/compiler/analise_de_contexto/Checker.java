@@ -131,22 +131,28 @@ public class Checker implements Visitor {
 
 
     @Override
-    public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
-        if (identificationTable.retrieve(declaracao.ID.valor) == null) {
-            identificationTable.enter(
-                declaracao.ID.valor,
-                declaracao.tipo.tipoSimples.tipoType,
-                declaracao
-            );
-            declaracao.ID.visit(this);
-        } else {
-            new ShowError(
-                "Variável \"" + declaracao.ID.token.spelling + "\" já declarada\n" + 
-                "Linha: " + declaracao.ID.token.line + " Coluna: " 
-                + declaracao.ID.token.column
-            );
+public void visit_nodeDeclaracaoDeVariavel(nodeDeclaracaoDeVariavel declaracao) {
+    if (declaracao != null && declaracao.IDs != null) {
+        for (int i = 0; i < declaracao.IDs.size(); i++) {
+            nodeID id = declaracao.IDs.get(i);
+
+            if (identificationTable.retrieve(id.valor) == null) {
+                identificationTable.enter(
+                    id.valor,
+                    declaracao.tipo.tipoSimples.tipoType,
+                    declaracao
+                );
+                id.visit(this);
+            } else {
+                new ShowError(
+                    "Variável \"" + id.token.spelling + "\" já declarada\n" +
+                    "Linha: " + id.token.line + " Coluna: " +
+                    id.token.column
+                );
+            }
         }
     }
+}
 
 
     @Override

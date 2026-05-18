@@ -1,449 +1,407 @@
 package compiler.analise_sintatica;
 
-
 import java.util.ArrayList;
-
 
 import compiler.ShowError;
 import compiler.Token;
 import compiler.analise_de_contexto.Type;
 import compiler.visitor.*;
 
-
 public class Parser {
-  private int currentTokenId;
+    private int currentTokenId;
 
+    private int currentIndex;
+    private ArrayList<Token> arrayOfTokens;
 
-  private int currentIndex;
-  private ArrayList<Token> arrayOfTokens;
+    public Parser(ArrayList<Token> arrayList) {
+        this.currentIndex = 0;
+        this.arrayOfTokens = arrayList;
 
-
-  public Parser(ArrayList<Token> arrayList) {
-    this.currentIndex = 0;
-    this.arrayOfTokens = arrayList;
-
-
-    this.currentTokenId = this.arrayOfTokens.get(currentIndex).kind;
-  }
-
-
-  private void accept(int tokenId) {
-    if (tokenId == currentTokenId) {
-      currentIndex++;
-      if (this.arrayOfTokens.size() > currentIndex) {
-        currentTokenId = this.arrayOfTokens.get(currentIndex).kind;
-      }
-    } else {
-      new ShowError(
-        "Símbolo não aceito: " + arrayOfTokens.get(currentIndex).spelling + "\n"
-        + "Linha: " + arrayOfTokens.get(currentIndex).line
-        + " Coluna: " + arrayOfTokens.get(currentIndex).column
-      );
+        if (this.arrayOfTokens.size() > 0) {
+            this.currentTokenId = this.arrayOfTokens.get(currentIndex).kind;
+        } else {
+            this.currentTokenId = Token.EOT;
+        }
     }
-  }
 
-
-  private void acceptIt() {
-    currentIndex++;
-    if (this.arrayOfTokens.size() > currentIndex) {
-      currentTokenId = this.arrayOfTokens.get(currentIndex).kind;
+    private Token currentToken() {
+        if (currentIndex >= 0 && currentIndex < arrayOfTokens.size()) {
+            return arrayOfTokens.get(currentIndex);
+        }
+        return new Token(Token.EOT, "<eot>", -1, -1);
     }
-  }
 
-
-  private nodeComandoAtribuicao parse_atribuicao() {
-    nodeComandoAtribuicao comandoAtribuicao = new nodeComandoAtribuicao(this.arrayOfTokens.get(currentIndex));
-
-
-    comandoAtribuicao.variavel = parse_variavel();
-    accept(Token.BECOMES);
-    comandoAtribuicao.expressao = parse_expressao();
-    accept(Token.SEMICOLON);
-
-
-    return comandoAtribuicao;
-  }
-
-
-  private nodeComando parse_comando() {
-    nodeComando comando;
-
-
-    switch (currentTokenId) {
-      case Token.IDENTIFIER:
-        comando = parse_atribuicao();
-        break;
-      case Token.IF:
-        comando = parse_condicional();
-        break;
-      case Token.WHILE:
-        comando = parse_iterativo();
-        break;
-      case Token.BEGIN:
-        comando = parse_comandoComposto();
-        break;
-      default:
-        new ShowError(
-          "Comando que começa com \"" + 
-          arrayOfTokens.get(currentIndex).spelling + 
-          "\" não identificado" 
-          + "Linha: " + arrayOfTokens.get(currentIndex).line 
-          + " Coluna: " + arrayOfTokens.get(currentIndex).column
-        );
-        comando = null;
+    private void accept(int tokenId) {
+        if (tokenId == currentTokenId) {
+            currentIndex++;
+            if (currentIndex < arrayOfTokens.size()) {
+                currentTokenId = arrayOfTokens.get(currentIndex).kind;
+            } else {
+                currentTokenId = Token.EOT;
+            }
+        } else {
+            Token token = currentToken();
+            new ShowError(
+                "Símbolo não aceito: " + token.spelling + "\n"
+                + "Linha: " + token.line
+                + " Coluna: " + token.column
+            );
+        }
     }
-    return comando;
-  }
 
-
-  private nodeComandoComposto parse_comandoComposto() {
-    nodeComandoComposto comandoComposto = new nodeComandoComposto(
-      arrayOfTokens.get(currentIndex)
-    );
-
-
-    accept(Token.BEGIN);
-    comandoComposto.comandos = parse_listaDeComandos();
-    accept(Token.END);
-
-
-    return comandoComposto;
-  }
-
-
-  private nodeComandoCondicional parse_condicional() {
-    nodeComandoCondicional condicional = new nodeComandoCondicional(this.arrayOfTokens.get(currentIndex));
-
-
-    accept(Token.IF);
-    condicional.expressao = parse_expressao();
-    accept(Token.THEN);
-    condicional.comando1 = parse_comando();
-
-
-    condicional.comando2 = null;
-
-
-    if (currentTokenId == Token.ELSE) {
-      acceptIt();
-      condicional.comando2 = parse_comando();
+    private void acceptIt() {
+        currentIndex++;
+        if (currentIndex < arrayOfTokens.size()) {
+            currentTokenId = arrayOfTokens.get(currentIndex).kind;
+        } else {
+            currentTokenId = Token.EOT;
+        }
     }
-    return condicional;
-  }
 
+    private nodeComandoAtribuicao parse_atribuicao() {
+        nodeComandoAtribuicao comandoAtribuicao = new nodeComandoAtribuicao(currentToken());
 
-  private nodeCorpo parse_corpo() {
-    nodeCorpo corpo = new nodeCorpo();
+        comandoAtribuicao.variavel = parse_variavel();
+        accept(Token.BECOMES);
+        comandoAtribuicao.expressao = parse_expressao();
 
+        return comandoAtribuicao;
+    }
 
-    corpo.declaracoes = parse_declaracoes();
-    corpo.comandoComposto = parse_comandoComposto();
+    private nodeComando parse_comando() {
+        nodeComando comando;
 
+        switch (currentTokenId) {
+            case Token.IDENTIFIER:
+                comando = parse_atribuicao();
+                break;
+            case Token.IF:
+                comando = parse_condicional();
+                break;
+            case Token.WHILE:
+                comando = parse_iterativo();
+                break;
+            case Token.BEGIN:
+                comando = parse_comandoComposto();
+                break;
+            default:
+                Token token = currentToken();
+                new ShowError(
+                    "Comando que começa com \"" + token.spelling + "\" não identificado\n"
+                    + "Linha: " + token.line
+                    + " Coluna: " + token.column
+                );
+                comando = null;
+        }
 
-    return corpo;
-  }
+        return comando;
+    }
 
+    private nodeComandoComposto parse_comandoComposto() {
+        nodeComandoComposto comandoComposto = new nodeComandoComposto(currentToken());
 
-  private nodeDeclaracao parse_declaracao() {
-    nodeDeclaracao declaracao = new nodeDeclaracao();
-    declaracao.declaracaoDeVariavel = parse_declaracaoDeVariavel();
+        accept(Token.BEGIN);
+        comandoComposto.comandos = parse_listaDeComandos();
+        accept(Token.END);
 
+        return comandoComposto;
+    }
 
-    return declaracao;
-  }
+    private nodeComandoCondicional parse_condicional() {
+        nodeComandoCondicional condicional = new nodeComandoCondicional(currentToken());
 
+        accept(Token.IF);
+        condicional.expressao = parse_expressao();
+        accept(Token.THEN);
+        condicional.comando1 = parse_comando();
 
-  private nodeDeclaracaoDeVariavel parse_declaracaoDeVariavel() {
+        condicional.comando2 = null;
+
+        if (currentTokenId == Token.ELSE) {
+            accept(Token.ELSE);
+            condicional.comando2 = parse_comando();
+        }
+
+        return condicional;
+    }
+
+    private nodeCorpo parse_corpo() {
+        nodeCorpo corpo = new nodeCorpo();
+
+        corpo.declaracoes = parse_declaracoes();
+        corpo.comandoComposto = parse_comandoComposto();
+
+        return corpo;
+    }
+
+    private nodeDeclaracao parse_declaracao() {
+        nodeDeclaracao declaracao = new nodeDeclaracao();
+        declaracao.declaracaoDeVariavel = parse_declaracaoDeVariavel();
+
+        return declaracao;
+    }
+
+    private nodeDeclaracaoDeVariavel parse_declaracaoDeVariavel() {
     nodeDeclaracaoDeVariavel declaracaoDeVariavel = new nodeDeclaracaoDeVariavel();
 
-
     accept(Token.VAR);
+
     nodeID id = new nodeID(
-      this.arrayOfTokens.get(currentIndex).spelling,
-      this.arrayOfTokens.get(currentIndex)
+        currentToken().spelling,
+        currentToken()
     );
-    id.valor = arrayOfTokens.get(currentIndex).spelling;
-    declaracaoDeVariavel.ID = id;
+    id.valor = currentToken().spelling;
+    declaracaoDeVariavel.IDs.add(id);
+
     accept(Token.IDENTIFIER);
+
+    while (currentTokenId == Token.COMMA) {
+        accept(Token.COMMA);
+
+        nodeID outroId = new nodeID(
+            currentToken().spelling,
+            currentToken()
+        );
+        outroId.valor = currentToken().spelling;
+        declaracaoDeVariavel.IDs.add(outroId);
+
+        accept(Token.IDENTIFIER);
+    }
+
     accept(Token.COLON);
     declaracaoDeVariavel.tipo = parse_tipo();
 
-
     return declaracaoDeVariavel;
-  }
+}
 
+    private nodeDeclaracoes parse_declaracoes() {
+        nodeDeclaracoes declaracoes = new nodeDeclaracoes();
+        declaracoes.declaracoes = new ArrayList<>();
 
-  private nodeDeclaracoes parse_declaracoes() {
-    nodeDeclaracoes declaracoes = new nodeDeclaracoes();
-    declaracoes.declaracoes = new ArrayList<>();
+        while (currentTokenId == Token.VAR) {
+            declaracoes.declaracoes.add(parse_declaracao());
+            accept(Token.SEMICOLON);
+        }
 
-
-    while (currentTokenId == Token.VAR) {
-      declaracoes.declaracoes.add(parse_declaracao());
-      accept(Token.SEMICOLON);
+        return declaracoes;
     }
 
+    private nodeExpressao parse_expressao() {
+        nodeExpressao expressao = new nodeExpressao(currentToken());
 
-    return declaracoes;
-  }
+        expressao.expressaoSimples1 = parse_expressaoSimples();
+        expressao.operadorRelacional = null;
+        expressao.expressaoSimples2 = null;
 
+        if (currentTokenId == Token.RELATIONALOPERATOR) {
+            nodeOperadorRelacional operadorRelacional = new nodeOperadorRelacional(
+                currentToken().spelling,
+                Token.RELATIONALOPERATOR
+            );
+            expressao.operadorRelacional = operadorRelacional;
 
-  private nodeExpressao parse_expressao() {
-    nodeExpressao expressao = new nodeExpressao(this.arrayOfTokens.get(currentIndex));
+            acceptIt();
 
+            expressao.expressaoSimples2 = parse_expressaoSimples();
+        }
 
-    expressao.expressaoSimples1 = parse_expressaoSimples();
-    expressao.operadorRelacional = null;
-    expressao.expressaoSimples2 = null;
-
-
-    if (currentTokenId == Token.RELATIONALOPERATOR) {
-      nodeOperadorRelacional operadorRelacional = new nodeOperadorRelacional(
-        arrayOfTokens.get(currentIndex).spelling,
-        Token.RELATIONALOPERATOR
-      );
-      expressao.operadorRelacional = operadorRelacional;
-
-
-      acceptIt();
-
-
-      expressao.expressaoSimples2 = parse_expressaoSimples();
+        return expressao;
     }
 
+    private nodeExpressaoSimples parse_expressaoSimples() {
+        nodeExpressaoSimples expressaoSimples = new nodeExpressaoSimples();
+        expressaoSimples.termo = parse_termo();
+        expressaoSimples.operadoresAditivos = new ArrayList<nodeOperadorAditivo>();
+        expressaoSimples.termos = new ArrayList<nodeTermo>();
 
-    return expressao;
-  }
+        while (currentTokenId == Token.ADITIONALOPERATOR) {
+            nodeOperadorAditivo operadorAditivo = new nodeOperadorAditivo(
+                currentToken().spelling,
+                Token.ADITIONALOPERATOR
+            );
+            expressaoSimples.operadoresAditivos.add(operadorAditivo);
 
+            acceptIt();
 
-  private nodeExpressaoSimples parse_expressaoSimples() {
-    nodeExpressaoSimples expressaoSimples = new nodeExpressaoSimples();
-    expressaoSimples.termo = parse_termo();
-    expressaoSimples.operadoresAditivos = new ArrayList<nodeOperadorAditivo>();
-    expressaoSimples.termos = new ArrayList<nodeTermo>();
+            expressaoSimples.termos.add(parse_termo());
+        }
 
-
-    while (currentTokenId == Token.ADITIONALOPERATOR) {
-      nodeOperadorAditivo operadorAditivo = new nodeOperadorAditivo(
-        arrayOfTokens.get(currentIndex).spelling,
-        Token.ADITIONALOPERATOR
-      );
-      expressaoSimples.operadoresAditivos.add(operadorAditivo);
-
-
-      acceptIt();
-
-
-      expressaoSimples.termos.add(parse_termo());
+        return expressaoSimples;
     }
 
+    private nodeFator parse_fator() {
+        nodeFator fator = null;
+        Type tipo;
+        nodeLiteral aux2;
 
-    return expressaoSimples;
-  }
+        switch (currentTokenId) {
+            case Token.IDENTIFIER:
+                nodeVariavel aux1 = new nodeVariavel(
+                    new nodeID(
+                        currentToken().spelling,
+                        currentToken()
+                    ),
+                    currentToken()
+                );
+                fator = aux1;
+                acceptIt();
+                break;
 
+            case Token.INTLITERAL:
+                tipo = new Type(Type.INT);
+                aux2 = new nodeLiteral(currentToken().spelling, tipo);
+                fator = aux2;
+                acceptIt();
+                break;
 
-  private nodeFator parse_fator() {
-    nodeFator fator = null;
-    Type tipo;
-    nodeLiteral aux2;
-    
-    switch (currentTokenId) {
-      case Token.IDENTIFIER:
-        nodeVariavel aux1 = new nodeVariavel(
-          new nodeID(
-            this.arrayOfTokens.get(currentIndex).spelling,
-            this.arrayOfTokens.get(currentIndex)
-          ),
-          this.arrayOfTokens.get(currentIndex)
+            case Token.FLOATLITERAL:
+                tipo = new Type(Type.REAL);
+                aux2 = new nodeLiteral(currentToken().spelling, tipo);
+                fator = aux2;
+                acceptIt();
+                break;
+
+            case Token.BOOLLITERAL:
+                tipo = new Type(Type.BOOL);
+                aux2 = new nodeLiteral(currentToken().spelling, tipo);
+                fator = aux2;
+                acceptIt();
+                break;
+
+            case Token.LPAREN:
+                accept(Token.LPAREN);
+                nodeExpressao expressao = parse_expressao();
+                accept(Token.RPAREN);
+                fator = expressao;
+                break;
+
+            default:
+                Token token = currentToken();
+                new ShowError(
+                    "Símbolo \"" + token.spelling + "\" não identificado\n" +
+                    "Linha: " + token.line + " " +
+                    "Coluna: " + token.column
+                );
+        }
+
+        return fator;
+    }
+
+    private nodeComandoIterativo parse_iterativo() {
+        nodeComandoIterativo comandoIterativo = new nodeComandoIterativo(currentToken());
+
+        accept(Token.WHILE);
+        comandoIterativo.expressao = parse_expressao();
+        accept(Token.DO);
+        comandoIterativo.comando = parse_comando();
+
+        return comandoIterativo;
+    }
+
+    private ArrayList<nodeComando> parse_listaDeComandos() {
+        ArrayList<nodeComando> comandos = new ArrayList<>();
+
+        while (
+            currentTokenId == Token.IDENTIFIER ||
+            currentTokenId == Token.IF ||
+            currentTokenId == Token.WHILE ||
+            currentTokenId == Token.BEGIN
+        ) {
+            comandos.add(parse_comando());
+            accept(Token.SEMICOLON);
+        }
+
+        return comandos;
+    }
+
+    private void parse_outros() {
+        switch (currentTokenId) {
+            case Token.EXCLAMATION:
+            case Token.ARROBA:
+            case Token.HASHTAG:
+            case Token.ELLIPSIS:
+                acceptIt();
+                break;
+            default:
+                Token token = currentToken();
+                new ShowError(
+                    "Símbolo não aceito: " + token.spelling
+                    + " Linha: " + token.line
+                    + " Coluna: " + token.column
+                );
+        }
+    }
+
+    private nodePrograma parse_programa() {
+        nodePrograma programaAST = new nodePrograma();
+
+        accept(Token.PROGRAM);
+
+        programaAST.id = new nodeID(
+            currentToken().spelling,
+            currentToken()
         );
-        fator = aux1;
+        programaAST.id.valor = currentToken().spelling;
 
+        accept(Token.IDENTIFIER);
+        accept(Token.SEMICOLON);
 
-        acceptIt();
-        break;
+        programaAST.corpo = parse_corpo();
 
+        accept(Token.PERIOD);
 
-      case Token.INTLITERAL:
-        tipo = new Type(Type.INT);
-        aux2 = new nodeLiteral(
-          arrayOfTokens.get(currentIndex).spelling, tipo
+        return programaAST;
+    }
+
+    private nodeTermo parse_termo() {
+        nodeTermo termo = new nodeTermo();
+        termo.fatores = new ArrayList<nodeFator>();
+        termo.operadoresMultiplicativos = new ArrayList<nodeOperadorMultiplicativo>();
+
+        termo.fator = parse_fator();
+
+        while (currentTokenId == Token.MULTIPLICATIONALOPERATOR) {
+            nodeOperadorMultiplicativo operadorMultiplicativo =
+                new nodeOperadorMultiplicativo(
+                    currentToken().spelling,
+                    Token.MULTIPLICATIONALOPERATOR
+                );
+            termo.operadoresMultiplicativos.add(operadorMultiplicativo);
+
+            acceptIt();
+
+            termo.fatores.add(parse_fator());
+        }
+
+        return termo;
+    }
+
+    private nodeTipo parse_tipo() {
+        nodeTipo tipo = new nodeTipo();
+
+        String tipoString = currentToken().spelling;
+        Type tipoType = Type.evaluateString(tipoString);
+        tipo.tipoSimples = new nodeTipoSimples(tipoString, tipoType);
+
+        accept(Token.TIPOSIMPLES);
+        return tipo;
+    }
+
+    private nodeVariavel parse_variavel() {
+        nodeID ID = new nodeID(
+            currentToken().spelling,
+            currentToken()
         );
-        fator = aux2;
+        ID.valor = currentToken().spelling;
 
+        nodeVariavel variavel = new nodeVariavel(ID, currentToken());
 
-        acceptIt();
-        break;
-        
-      case Token.BOOLLITERAL:
-        tipo = new Type(Type.BOOL);
-        aux2 = new nodeLiteral(
-          arrayOfTokens.get(currentIndex).spelling, tipo
-        );
-        fator = aux2;
+        accept(Token.IDENTIFIER);
 
-
-        acceptIt();
-        break;
-
-
-      case Token.LPAREN:
-        acceptIt();
-
-
-        nodeExpressao expressao = new nodeExpressao(this.arrayOfTokens.get(currentIndex));
-        expressao = parse_expressao();
-
-
-        accept(Token.RPAREN);
-
-
-        fator = expressao;
-        break;
-
-
-      default:
-        new ShowError(
-          "Símbolo \"" + arrayOfTokens.get(currentIndex).spelling + "\" não identificado"  + "\n" + 
-          "Linha: " + arrayOfTokens.get(currentIndex).line + " " + 
-          "Coluna: " + arrayOfTokens.get(currentIndex).column
-        );
-    }
-    return fator;
-  }
-
-
-  private nodeComandoIterativo parse_iterativo() {
-    nodeComandoIterativo comandoIterativo = new nodeComandoIterativo(
-      arrayOfTokens.get(currentIndex)
-    );
-
-
-    accept(Token.WHILE);
-    comandoIterativo.expressao = parse_expressao();
-    accept(Token.DO);
-    comandoIterativo.comando = parse_comando();
-
-
-    return comandoIterativo;
-  }
-
-
-  private ArrayList<nodeComando> parse_listaDeComandos() {
-    ArrayList<nodeComando> comandos = new ArrayList<>();
-
-
-    while (
-      currentTokenId == Token.IDENTIFIER ||
-      currentTokenId == Token.IF ||
-      currentTokenId == Token.WHILE ||
-      currentTokenId == Token.BEGIN
-    ) {
-      comandos.add(parse_comando());
+        return variavel;
     }
 
-
-    return comandos;
-  }
-
-
-  private void parse_outros() {
-    switch (currentTokenId) {
-      case Token.EXCLAMATION:
-      case Token.ARROBA:
-      case Token.HASHTAG:
-      case Token.ELLIPSIS:
-        acceptIt();
-        break;
-      default:
-        new ShowError("Símbolo não aceito: " + arrayOfTokens.get(currentIndex).spelling
-        + "Linha: " + arrayOfTokens.get(currentIndex).line + "\""
-        + " Coluna: " + arrayOfTokens.get(currentIndex).column);
+    public nodePrograma parse() {
+        return parse_programa();
     }
-  }
-
-
-  private nodePrograma parse_programa() {
-    nodePrograma programaAST = new nodePrograma();
-
-
-    accept(Token.PROGRAM);
-    programaAST.id = new nodeID(
-      this.arrayOfTokens.get(currentIndex).spelling,
-      this.arrayOfTokens.get(currentIndex)
-    );
-    programaAST.id.valor = arrayOfTokens.get(currentIndex).spelling;
-    accept(Token.IDENTIFIER);
-
-
-    accept(Token.SEMICOLON);
-    programaAST.corpo = parse_corpo();
-    accept(Token.PERIOD);
-
-
-    return programaAST;
-  }
-
-
-  private nodeTermo parse_termo() {
-    nodeTermo termo = new nodeTermo();
-    termo.fatores = new ArrayList<nodeFator>();
-    termo.operadoresMultiplicativos = new ArrayList<nodeOperadorMultiplicativo>();
-
-
-    termo.fator = parse_fator();
-    while (currentTokenId == Token.MULTIPLICATIONALOPERATOR) {
-      nodeOperadorMultiplicativo operadorMultiplicativo = 
-      new nodeOperadorMultiplicativo(
-        arrayOfTokens.get(currentIndex).spelling,
-        Token.MULTIPLICATIONALOPERATOR
-      );
-      termo.operadoresMultiplicativos.add(operadorMultiplicativo);
-
-
-      acceptIt();
-
-
-      termo.fatores.add(parse_fator());
-    }
-    return termo;
-  }
-
-
-  private nodeTipo parse_tipo() {
-    nodeTipo tipo = new nodeTipo();
-
-
-    String tipoString = arrayOfTokens.get(currentIndex).spelling;
-    Type tipoType = Type.evaluateString(tipoString);
-    tipo.tipoSimples = new nodeTipoSimples(tipoString, tipoType);
-
-
-    accept(Token.TIPOSIMPLES);
-    return tipo;
-  }
-
-
-  private nodeVariavel parse_variavel() {
-    nodeID ID = new nodeID(
-      this.arrayOfTokens.get(currentIndex).spelling,
-      this.arrayOfTokens.get(currentIndex)
-    );
-    ID.valor = arrayOfTokens.get(currentIndex).spelling;
-
-
-    nodeVariavel variavel = new nodeVariavel(
-      ID, arrayOfTokens.get(currentIndex)
-    );
-
-
-    accept(Token.IDENTIFIER);
-
-
-    return variavel;
-  }
-
-
-  public nodePrograma parse() {
-    return parse_programa();
-  }
-}""
+}

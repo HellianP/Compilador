@@ -1,12 +1,11 @@
 package compiler;
 
-import java.util.ArrayList;
-
 import compiler.analise_de_contexto.Checker;
 import compiler.analise_lexica.Scanner;
 import compiler.analise_sintatica.Parser;
 import compiler.geracao_de_codigo.CodeGenerator;
 import compiler.visitor.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -14,7 +13,7 @@ import compiler.visitor.*;
  */
 public class Compiler {
 
-	public static String fileName = "/test/code0.txt";
+	public static String fileName = "C:/Users/helli/OneDrive/Desktop/Matérias/Compiladores/Compilador/bin/test/code0.txt";
 	public static int steps = 5;
 
 	/**
