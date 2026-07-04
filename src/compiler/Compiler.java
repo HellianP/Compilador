@@ -13,13 +13,16 @@ import java.util.ArrayList;
  */
 public class Compiler {
 
-	public static String fileName = "C:/Users/helli/OneDrive/Desktop/Matérias/Compiladores/Compilador/bin/test/code0.txt";
+	public static String fileName = "test/code0.txt";
 	public static int steps = 5;
 
 	/**
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
+		if (args.length > 0) {
+			fileName = args[0];
+		}
 		Scanner scanner = new Scanner(fileName);
 		int counter = 0;
 		ArrayList<Token> arrayOfTokens = new ArrayList<>();

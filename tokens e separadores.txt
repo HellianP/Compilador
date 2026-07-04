@@ -1,29 +1,32 @@
 <Token> ::=
   <id> | <literal> |
-  
+
   begin | if | then |
-  else | var | while | do | program | end
-  := | ( | ) | : | ; | . |
+  else | var | while | do | program | end |
+
+  := | ( | ) | : | ; | , | . |
   <outros> | <op-ad> | <op-mul> | <op-rel> |
   <tipo-simples>
 
-<id> ::= <letra> | <id><letra> | <id><digito> 
+<id> ::= <letra> | <id><letra> | <id><digito>
   <letra> ::= a | b | c | d | e | ... | z
 
-<literal> ::= <bool-lit> | <int-lit>
+<literal> ::= <bool-lit> | <int-lit> | <float-lit>
   <bool-lit> ::= true | false
   <int-lit> ::= <digito> | <int-lit><digito>
     <digito> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+  <float-lit> ::= <int-lit> . <int-lit> | <int-lit> . | . <int-lit>
 
 <op-ad> ::= + | - | or
 <op-mul> ::= * | / | and
-<op-rel> ::= < | > | =
+<op-rel> ::= < | > | <= | >= | = | <>
 <outros> ::= ! | @ | # | ...
 
-<tipo-simples> ::= integer | boolean
+<tipo-simples> ::= integer | real | boolean
 
 OBS:
-- Talvez "(" | ")" façam parte dos tokens
+- "(" e ")" fazem parte dos tokens (LPAREN e RPAREN).
+- "," faz parte dos tokens (COMMA), usado em <lista-de-ids>.
 =================================================================================
 
 <Separator> ::= 

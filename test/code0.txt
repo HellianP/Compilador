@@ -1,4 +1,14 @@
-program a;
+program teste5;
+
+var x : integer;
+var y : integer;
 
 begin
+  x := 0;
+  y := 3;
+
+  while x < y do
+  begin
+    x := x + 1;
+  end;
 end.

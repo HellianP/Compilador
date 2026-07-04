@@ -1,21 +1,25 @@
   PUSH 2
   PUSH 2
-  PUSH 2
-  PUSH 1
 
-  LOADL 12.5
+  LOADL 0
   STORE 0[SB]
 
-  LOADL .5
+  LOADL 3
   STORE 2[SB]
 
+E_1:
   LOAD 0[SB]
   LOAD 2[SB]
-  CALL GE
-  STORE 6[SB]
+  CALL LT
+  JUMPIF (0) E_2
 
-  POP 0
-  POP 0
+  LOAD 0[SB]
+  LOADL 1
+  CALL ADD
+  STORE 0[SB]
+  JUMP E_1
+E_2:
+
   POP 2
-  POP 1
+  POP 2
   HALT

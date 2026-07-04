@@ -23,7 +23,7 @@ first1() = {var, begin}
 first1() = {var}
 
 <declaração-de-variável> ::=
-    var <id> : <tipo>
+    var <lista-de-ids> : <tipo>
 first1() = {var}
 
 <declarações> ::=
@@ -51,6 +51,10 @@ first1() = {while}
 <lista-de-comandos> ::=
     (<comando> ;)*
 first1() = {<id>} U {end}
+
+<lista-de-ids> ::=
+    <id> (, <id>)*
+first1() = {<id>}
 
 <outros> ::=
     !
@@ -89,8 +93,9 @@ first1() = {a,b,c,...,z}
 
 <tipo-simples> ::=
     integer
+    | real
     | boolean
-first1() = {integer, boolean}
+first1() = {integer, real, boolean}
 
 <bool-lit> ::=
     true | false
@@ -100,10 +105,17 @@ first1() = {true} U {false}
     <digito>(<digito>)*
 first1() = {0,1,2,...,9}
 
+<float-lit> ::=
+    <int-lit> . <int-lit>
+    | <int-lit> .
+    | . <int-lit>
+first1() = {0,1,2,...,9} U {.}
+
 <literal> ::=
     <bool-lit>
     | <int-lit>
-first1() = {<bool-lit>} U {<int-lit>}
+    | <float-lit>
+first1() = {<bool-lit>} U {<int-lit>} U {<float-lit>}
 
 <id> ::=
     <letra> ( <letra> | <digito> )*
@@ -122,7 +134,10 @@ first1() = {+, -, or}
 first1() = {*, /, and}
 
 <op-rel> ::=
-    <
+    
     | >
+    | <=
+    | >=
     | =
-first1() = {<, >, =}
+    | <>
+first1() = {<, >, <=, >=, =, <>}

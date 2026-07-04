@@ -1,5 +1,12 @@
-Essa linguagem possui escopo aninhado.
-O seguintes blocos têm escopo:
-- Comando condicional
-- Comando iterativo
-- Comando composto
+Essa linguagem possui escopo único (monolítico) para todo o programa.
+
+Todas as variáveis declaradas na seção de declarações são visíveis em
+qualquer ponto do corpo do programa, independentemente de estarem dentro
+de blocos condicionais, iterativos ou compostos.
+
+Não há criação de novos escopos ao entrar em um comando condicional,
+iterativo ou composto: esses blocos apenas agrupam comandos, sem
+delimitar visibilidade de identificadores.
+
+As variáveis permanecem alocadas durante todo o ciclo de vida do
+programa, sendo desalocadas apenas ao final da execução.
