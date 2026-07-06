@@ -9,6 +9,6 @@ begin
 
   while x < y do
   begin
-    x := x + 1;
+    x := x + 2;
   end;
 end.
